@@ -245,6 +245,26 @@ app.get("/", (_req, res) => {
 // =========================
 app.post("/register", async (req, res) => {
   // Implement logic here based on the TODO 1.
+  try {
+  const { email, password } = req.body || {};
+  // 1. Validation
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email and password are required" });
+  }
+  // 2. Check existence
+  const existing = users.find((u) => u.email === email);
+  if (existing) {
+    return res.status(400).json({ error: "User already exists" });
+  }
+  // 3. Hash password (10 is the salt rounds)
+  const hash = await bcrypt.hash(password, 10);
+  // 4. Store user
+  users.push({ email, passwordHash: hash });
+  return res.status(201).json({ message: "User registered!" });
+} catch (err) {
+  console.error("Register error:", err);
+  return res.status(500).json({ error: "Server error during register" });
+}
 });
 
 // =========================
